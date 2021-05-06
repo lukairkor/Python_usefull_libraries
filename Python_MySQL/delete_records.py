@@ -2,7 +2,11 @@
 # -*- coding: utf-8 -*-
 """
 Created on Wed May  5 00:22:42 2021
-
+-
+-
+-
+-
+-
 @author: lukas
 """
 import mysql.connector
@@ -80,6 +84,7 @@ def del_duplicats(mycursor):
     mydb.commit()
     mycursor.close()
     mydb.close()
+    
     
 # main function
 def main():
