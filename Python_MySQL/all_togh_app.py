@@ -16,6 +16,8 @@ Created on Thu May  6 00:04:36 2021
 @author: lukas
 """
 import mysql.connector
+import os
+
 
 # connecting to database
 mydb = mysql.connector.connect(
@@ -156,23 +158,88 @@ def show_with_range(mycursor):
     myresult = mycursor.fetchall()
     
     for x in myresult:
-      print(x)     
-    
+      print(x)  
+     
+      
+# print menu      
+def menu():    
+        print("""            
+            1.  (print names of columns in table).
+            2.  (show all items from tab).
+            3.  (count all duplicates in table and show them).
+            4.  (finding and deliting duplicates).
+            5.  (sorting function).
+            6.  (deleting data).
+            7.  (deleting tab).
+            8.  (updating record in tab).
+            9.  (limit tab elements for show).
+            10. (limit range of displayed tabs data).
+            11. (Close programm).
+        """)
+        value = int(input("Input value:\n"))
+        return value
+
+
+# clear and continue 
+def any_key_clear():    
+    input("press any key to continue.")
+    os.system('clear')   
+
     
 # main function
 def main():
     mycursor = mydb.cursor()
-        
-    # display_duplica_rows(mycursor)
-    # del_duplicats(mycursor)    
-    # tabl_colum_names(mycursor)
-    # sort_funct(mycursor)
-    # delet_record_or_whole_tab(mycursor)     
-    # del_table(mycursor)
-    # updating_record(mycursor)
-    # show_with_limits(mycursor)
-    show_with_range(mycursor)
-    # show_tab_data(mycursor)
+    
+    value = -1
+    while value != 0:
+        value = menu()
+        if value == 1:
+            tabl_colum_names(mycursor)
+            any_key_clear()
+            continue
+        elif value == 2:
+            show_tab_data(mycursor)
+            any_key_clear()
+            continue
+        elif value == 3:
+            display_duplica_rows(mycursor) 
+            any_key_clear()
+            continue
+        elif value == 4:            
+            del_duplicats(mycursor) 
+            any_key_clear()
+            continue
+        elif value == 5:
+            sort_funct(mycursor)
+            any_key_clear()
+            continue
+        elif value == 6:
+            delet_record_or_whole_tab(mycursor)
+            any_key_clear()
+            continue
+        elif value == 7:
+            del_table(mycursor)
+            any_key_clear()
+            continue
+        elif value == 8:
+            updating_record(mycursor)
+            any_key_clear()
+            continue
+        elif value == 9:
+            show_with_limits(mycursor)
+            any_key_clear()
+            continue
+        elif value == 10:
+            show_with_range(mycursor)
+            any_key_clear()
+            continue
+        elif value == 11:
+            break
+        else:
+            print("Incorrect chooise, try again!")
+    
+    
+    
 if __name__ == "__main__":
     main()
 
