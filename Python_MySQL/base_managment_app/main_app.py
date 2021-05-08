@@ -13,11 +13,16 @@ Created on Thu May  6 00:04:36 2021
 -adding function (updating record in tab)
 -adding function (limit tab elements for show)
 -adding function (limit range of displayed tabs data)
+-add menu and better tab show
+-add possiblity to creat new tab and import it as classe object
 @author: lukas
 """
 import mysql.connector
 import os
-
+from tabulate import tabulate
+import functools
+from creat_new_tab import Create_Table 
+  
 
 # connecting to database
 mydb = mysql.connector.connect(
@@ -28,8 +33,35 @@ mydb = mysql.connector.connect(
 )
 
 
+# print names of columns in table       
+def show_tabl_colum_names(mycursor):
+    # first option scheme
+    sql = """SELECT COLUMN_NAME
+      FROM INFORMATION_SCHEMA.Columns
+      WHERE TABLE_SCHEMA = 'sql-kurs' AND TABLE_NAME = 'users';"""
+    
+    mycursor.execute(sql)
+    myresult = mycursor.fetchall()
+    # create one tuple with list of tuples (all with strings)
+    myresult = functools.reduce(lambda sub, ele: sub  + ele, myresult)     
+
+    mydb.commit()
+    return myresult
+    
+
+# show all items from tab
+def show_tabl_colum_data(mycursor):
+    mycursor.execute("SELECT * FROM users")
+    myresult = mycursor.fetchall() # checking all row   
+    # fetch only one row
+
+    tab = show_tabl_colum_names(mycursor)
+    a, b, c, d = tab
+    print(tabulate(myresult, headers=[c, b, d, a]))
+
+        
 # count all duplicates in table and show them
-def display_duplica_rows(mycursor):
+def check_if_are_row_duplicates(mycursor):
     sql = """
     SELECT COUNT(*), first_name, last_name, age 
     FROM users
@@ -37,44 +69,17 @@ def display_duplica_rows(mycursor):
     HAVING COUNT(*)>1;
     """
     mycursor.execute(sql)    
-
-    print('Duplicate Rows:')               
-    for row in mycursor.fetchall(): print(row)
+    
+    row = None
+    for row in mycursor.fetchall(): row
+    print('Duplicate Rows: ', row)               
+    
    
-
-# show all items from tab
-def show_tab_data(mycursor):
-    mycursor.execute("SELECT * FROM users")
-    myresult = mycursor.fetchall() # checking all row   
-    # fetch only one row
-    # myresult = mycursor.fetchone()
-
-    for x in myresult:
-        print(x)
- 
     
-# print names of columns in table       
-def tabl_colum_names(mycursor):
-    # first option scheme
-    sql = """SELECT COLUMN_NAME
-      FROM INFORMATION_SCHEMA.COLUMNS
-      WHERE TABLE_SCHEMA = 'sql-kurs' AND TABLE_NAME = 'users';
-    """
-    mycursor.execute(sql)
-    myresult = mycursor.fetchall()
-    
-    for x in myresult:
-        print(x)
-        
-    mydb.commit()
-    mycursor.close()
-    mydb.close()
-    
-
 # finding and deliting duplicates
-def del_duplicats(mycursor):    
+def del_row_duplicats(mycursor):    
     sql = """
-    DROP TABLE users_temp;
+    DROP TABLE IF EXISTS users_temp;
     
     CREATE TABLE users_temp 
     LIKE users;
@@ -91,8 +96,6 @@ def del_duplicats(mycursor):
     """
     mycursor.execute(sql)    
     mydb.commit()
-    mycursor.close()
-    mydb.close()
     
     
 # sorting ascending or descending    
@@ -115,7 +118,7 @@ def sort_funct(mycursor):
 
 
 # deleting data support anty injection
-def delet_record_or_whole_tab(mycursor):    
+def delet_record(mycursor):    
     sql = "DELETE FROM users WHERE age = %s"
     adr = ("66", )
     
@@ -127,7 +130,7 @@ def delet_record_or_whole_tab(mycursor):
 
 # deleting whole table
 def del_table(mycursor):
-    sql = "DROP TABLE customers"
+    sql = "DROP TABLE users"
     mycursor.execute(sql)
 
 
@@ -163,21 +166,23 @@ def show_with_range(mycursor):
       
 # print menu      
 def menu():    
-        print("""            
-            1.  (print names of columns in table).
-            2.  (show all items from tab).
-            3.  (count all duplicates in table and show them).
-            4.  (finding and deliting duplicates).
-            5.  (sorting function).
-            6.  (deleting data).
-            7.  (deleting tab).
-            8.  (updating record in tab).
-            9.  (limit tab elements for show).
-            10. (limit range of displayed tabs data).
-            11. (Close programm).
-        """)
-        value = int(input("Input value:\n"))
-        return value
+    print(           
+"""
+1.  Create new tab.
+2.  Add data to new tab.
+3.  Show all items from tab.
+4.  Count all duplicates in table and show them.
+5.  Finding and deliting duplicates.
+6.  Sorting function.
+7.  Delete record.
+8.  Deleting tab.
+9.  Updating record in tab.
+10. Limit tab elements for show.
+11. Limit range of displayed tabs data.
+12. Close programm.
+""")
+    value = int(input("Input value:\n"))
+    return value
 
 
 # clear and continue 
@@ -185,61 +190,70 @@ def any_key_clear():
     input("press any key to continue.")
     os.system('clear')   
 
-    
-# main function
-def main():
-    mycursor = mydb.cursor()
-    
+# # main function test
+# def main():    
+#     mycursor = mydb.cursor()    
+#     new_tab = Create_Table()
+
+
+#main function
+def main():    
     value = -1
     while value != 0:
+        mycursor = mydb.cursor()
+        new_tab = Create_Table()
         value = menu()
         if value == 1:
-            tabl_colum_names(mycursor)
+            new_tab.create_table(mycursor)
             any_key_clear()
             continue
         elif value == 2:
-            show_tab_data(mycursor)
+            new_tab.insert_data(mycursor, mydb)
             any_key_clear()
             continue
         elif value == 3:
-            display_duplica_rows(mycursor) 
+            show_tabl_colum_data(mycursor)
             any_key_clear()
             continue
-        elif value == 4:            
-            del_duplicats(mycursor) 
+        elif value == 4:
+            check_if_are_row_duplicates(mycursor) 
             any_key_clear()
             continue
-        elif value == 5:
-            sort_funct(mycursor)
+        elif value == 5:            
+            del_row_duplicats(mycursor) 
             any_key_clear()
             continue
         elif value == 6:
-            delet_record_or_whole_tab(mycursor)
+            sort_funct(mycursor)
             any_key_clear()
             continue
         elif value == 7:
-            del_table(mycursor)
+            delet_record(mycursor)
             any_key_clear()
             continue
         elif value == 8:
-            updating_record(mycursor)
+            del_table(mycursor)
             any_key_clear()
             continue
         elif value == 9:
-            show_with_limits(mycursor)
+            updating_record(mycursor)
             any_key_clear()
             continue
         elif value == 10:
-            show_with_range(mycursor)
+            show_with_limits(mycursor)
             any_key_clear()
             continue
         elif value == 11:
+            show_with_range(mycursor)
+            any_key_clear()
+            mycursor.close()
+            mydb.close()
+            continue
+        elif value == 12:
             break
         else:
             print("Incorrect chooise, try again!")
-    
-    
-    
+       
 if __name__ == "__main__":
     main()
 
