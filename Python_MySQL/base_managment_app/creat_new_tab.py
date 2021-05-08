@@ -47,21 +47,28 @@ class Create_Table:
            ('Susan','Nelson',45),
            ('Roland','Keitel',33); """
         mycursor.execute(sql)
-        mydb.commit()  
+        mydb.commit() 
+        mydb.close()
       
            
-    # insert to table specific data
-    def inse_singl_recor(self, mycursor):
+    # insert to table new data data
+    def inse_singl_recor(self, mycursor, mydb, show_tabl_colum_data):
+        show_tabl_colum_data(mycursor)          
+        self.u = input("Insert id:\n")
+        self.x = input("Insert first_name:\n")
+        self.y = input("Insert last_name:\n")
+        self.z = input("Insert age:\n")
         # inserting single record
-        sql = "INSERT INTO customers (name, address) VALUES (%s, %s)"
-        val = ("John", "Highway 21")
-        mycursor.execute(sql, val)
-           
-    
-
-
+        self.sql = "INSERT INTO users (id, first_name, last_name, age) VALUES (%s, %s, %s, %s)"
+        self.val = (self.u, self.x, self.y, self.z)
+        mycursor.execute(self.sql, self.val)
         
-
+        print(mycursor.rowcount, "record added")
+        show_tabl_colum_data(mycursor)  
+        mydb.commit()
+        mydb.close()
+    
+     
 
 
     

@@ -84,21 +84,14 @@ def check_if_are_row_duplicates(mycursor):
     
 # finding and deliting duplicates
 def del_row_duplicats(mycursor):    
-    sql = """
-    DROP TABLE IF EXISTS users_temp;
-    
-    CREATE TABLE users_temp 
-    LIKE users;
-    
-    INSERT INTO users_temp
-    SELECT * 
-    FROM users 
-    GROUP BY username;
-
-    DROP TABLE users;
-    
-    ALTER TABLE users_temp 
-    RENAME TO users;
+    sql = """    
+    delete t1 FROM users t1
+    INNER  JOIN users t2
+    WHERE
+    t1.id < t2.id AND
+    t1.first_name = t2.first_name AND
+    t1.last_name = t2.last_name AND
+    t1.age = t2.age;
     """
     mycursor.execute(sql)    
     mydb.commit()
@@ -110,7 +103,7 @@ def sort_funct(mycursor):
     options = ["Order by id [ascending]", "Order by first name [ascending]",
                "Order by last name [ascending]", "Order by age[ascending]",
                "Order by id [descending]", "Order by first name [descending]",
-               "Order by last name [descending]", "Order by age[descending]" ]    
+               "Order by last name [descending]", "Order by age[descending]"]    
      
     choice = enquiries.choose('Choose one of these options: ', options)
     # ascending
@@ -151,14 +144,17 @@ def sort_funct(mycursor):
 
 # deleting data support anty injection
 def delet_record(mycursor):
-    show_tabl_colum_data(mycursor)    
-    sql = "DELETE FROM users WHERE age = %s"
-    adr = ("66", )
+    show_tabl_colum_data(mycursor)  
+    
+    y = input("Select row id for delete.")
+    sql = "DELETE FROM users WHERE id= %s"
+    adr = (f"{y}", )
     
     mycursor.execute(sql, adr)   
     mydb.commit()
     
-    print(mycursor.rowcount, "record(s) deleted") 
+    print(mycursor.rowcount, "record deleted")
+    show_tabl_colum_data(mycursor)  
 
 
 # deleting whole table
@@ -201,16 +197,17 @@ def show_with_range(mycursor):
 def menu():
     options = [  
     "List all database.",
-    "Create new tab.",
-    "Add data to new tab.",
-    "Show all items from tab.",
-    "Count all duplicates in table and show them.",
-    "Finding and deliting duplicates.",
+    "Create new table.",
+    "Add data to new table.",
+    "Show all items in table.",
+    "Show duplicates.",
+    "Show and delete duplicates.",
     "Sorting function.",
     "Delete record.",
-    "Deleting tab.",
-    "Updating record in tab.",
-    "Limit tab elements for show.",
+    "Insert record",
+    "Deleting table.",
+    "Updating record in table.",
+    "Limit table elements for show.",
     "Limit range of displayed tabs data.",
     "Close programm."]
 
@@ -237,6 +234,7 @@ def main():
         new_tab = Create_Table()
         options = menu()
         choice = enquiries.choose('Choose one of these options: ', options)
+        
         if choice == options[0]:
             new_tab.list_all_database(mycursor)
             any_key_clear()
@@ -270,24 +268,28 @@ def main():
             any_key_clear()
             
         elif choice == options[8]:
+            new_tab.inse_singl_recor(mycursor, mydb, show_tabl_colum_data)
+            any_key_clear()   
+                        
+        elif choice == options[9]:
             del_table(mycursor)
             any_key_clear()
             
-        elif choice == options[9]:
+        elif choice == options[10]:
             updating_record(mycursor)
             any_key_clear()
             
-        elif choice == options[10]:
+        elif choice == options[11]:
             show_with_limits(mycursor)
             any_key_clear()
             
-        elif choice == options[11]:
+        elif choice == options[12]:
             show_with_range(mycursor)
             any_key_clear()
             mycursor.close()
             mydb.close()
             
-        elif choice == options[12]:
+        elif choice == options[13]:
             break
         else:
             print("Incorrect chooise, try again!")
