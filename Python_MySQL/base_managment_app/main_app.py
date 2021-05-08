@@ -168,18 +168,19 @@ def show_with_range(mycursor):
 def menu():    
     print(           
 """
-1.  Create new tab.
-2.  Add data to new tab.
-3.  Show all items from tab.
-4.  Count all duplicates in table and show them.
-5.  Finding and deliting duplicates.
-6.  Sorting function.
-7.  Delete record.
-8.  Deleting tab.
-9.  Updating record in tab.
-10. Limit tab elements for show.
-11. Limit range of displayed tabs data.
-12. Close programm.
+1.  List all database
+2.  Create new tab.
+3.  Add data to new tab.
+4.  Show all items from tab.
+5.  Count all duplicates in table and show them.
+6.  Finding and deliting duplicates.
+7.  Sorting function.
+8.  Delete record.
+9.  Deleting tab.
+10.  Updating record in tab.
+11. Limit tab elements for show.
+12. Limit range of displayed tabs data.
+13. Close programm.
 """)
     value = int(input("Input value:\n"))
     return value
@@ -204,55 +205,60 @@ def main():
         new_tab = Create_Table()
         value = menu()
         if value == 1:
-            new_tab.create_table(mycursor)
+            new_tab.list_all_database(mycursor)
             any_key_clear()
             continue
         elif value == 2:
-            new_tab.insert_data(mycursor, mydb)
+            new_tab.create_table(mycursor)
             any_key_clear()
             continue
         elif value == 3:
-            show_tabl_colum_data(mycursor)
+            new_tab.insert_data(mycursor, mydb)
             any_key_clear()
             continue
         elif value == 4:
+            show_tabl_colum_data(mycursor)
+            any_key_clear()
+            continue
+        elif value == 5:
             check_if_are_row_duplicates(mycursor) 
             any_key_clear()
             continue
-        elif value == 5:            
+        elif value == 6:            
             del_row_duplicats(mycursor) 
             any_key_clear()
             continue
-        elif value == 6:
+        elif value == 7:
             sort_funct(mycursor)
             any_key_clear()
             continue
-        elif value == 7:
+        elif value == 8:
             delet_record(mycursor)
             any_key_clear()
             continue
-        elif value == 8:
+        elif value == 9:
             del_table(mycursor)
             any_key_clear()
             continue
-        elif value == 9:
+        elif value == 10:
             updating_record(mycursor)
             any_key_clear()
             continue
-        elif value == 10:
+        elif value == 11:
             show_with_limits(mycursor)
             any_key_clear()
             continue
-        elif value == 11:
+        elif value == 12:
             show_with_range(mycursor)
             any_key_clear()
             mycursor.close()
             mydb.close()
             continue
-        elif value == 12:
+        elif value == 13:
             break
         else:
             print("Incorrect chooise, try again!")
+            continue
        
 if __name__ == "__main__":
     main()

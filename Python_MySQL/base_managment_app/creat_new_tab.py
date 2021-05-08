@@ -5,7 +5,15 @@ Created on Tue May  4 01:58:03 2021
 
 @author: lukas
 """
+from tabulate import tabulate
+
+
 class Create_Table:
+    def list_all_database(self, mycursor):
+        mycursor.execute("SHOW DATABASES")
+        print(tabulate(mycursor))
+  
+    # create new empty table
     def create_table(self, mycursor):
         sql = """
         DROP TABLE IF EXISTS users;
@@ -19,7 +27,7 @@ class Create_Table:
         mycursor.execute(sql)
       
         
-    
+    # insert to empty table some data
     def insert_data(self, mycursor, mydb):
         sql = """
         INSERT INTO users (first_name,last_name,age) 
@@ -42,7 +50,7 @@ class Create_Table:
         mydb.commit()  
       
            
-    
+    # insert to table specific data
     def inse_singl_recor(self, mycursor):
         # inserting single record
         sql = "INSERT INTO customers (name, address) VALUES (%s, %s)"
@@ -50,10 +58,6 @@ class Create_Table:
         mycursor.execute(sql, val)
            
     
-    # def execute_(self, mycursor):  
-    #     mycursor = mydb.cursor()        
-    #     mydb.commit()    
-    #     print(mycursor.rowcount, "record inserted.")
 
 
         
