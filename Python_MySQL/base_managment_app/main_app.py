@@ -21,6 +21,7 @@ import mysql.connector
 import os
 from tabulate import tabulate
 import functools
+import enquiries
 from creat_new_tab import Create_Table 
   
 
@@ -50,14 +51,19 @@ def show_tabl_colum_names(mycursor):
     
 
 # show all items from tab
-def show_tabl_colum_data(mycursor):
-    mycursor.execute("SELECT * FROM users")
-    myresult = mycursor.fetchall() # checking all row   
+def show_tabl_colum_data(*args):
+    len_args = len(args)
+    if len_args > 1:
+        args[0].execute(args[1])      
+    else: 
+        args[0].execute("SELECT * FROM users")
+        
+    myresult = args[0].fetchall() # checking all row   
     # fetch only one row
 
-    tab = show_tabl_colum_names(mycursor)
+    tab = show_tabl_colum_names(args[0])
     a, b, c, d = tab
-    print(tabulate(myresult, headers=[c, b, d, a]))
+    print(tabulate(myresult, headers=[a, b, c, d]))
 
         
 # count all duplicates in table and show them
@@ -66,14 +72,14 @@ def check_if_are_row_duplicates(mycursor):
     SELECT COUNT(*), first_name, last_name, age 
     FROM users
     GROUP BY first_name, last_name, age
-    HAVING COUNT(*)>1;
+    HAVING COUNT(*)>1;print('Duplicate Rows: ')               
+    for row in mycursor.fetchall():
     """
     mycursor.execute(sql)    
     
-    row = None
-    for row in mycursor.fetchall(): row
-    print('Duplicate Rows: ', row)               
-    
+    print('Duplicate Rows: ')               
+    for row in mycursor.fetchall(): 
+        print(row)
    
     
 # finding and deliting duplicates
@@ -99,26 +105,53 @@ def del_row_duplicats(mycursor):
     
     
 # sorting ascending or descending    
-def sort_funct(mycursor):   
-    sql = "SELECT * FROM users ORDER BY id"
-    # sql = "SELECT * FROM users ORDER BY first_name"
-    # sql = "SELECT * FROM users ORDER BY last_name"
-    # sql = "SELECT * FROM users ORDER BY age"
-    
-    # sql = "SELECT * FROM users ORDER BY id DESC"
-    # sql = "SELECT * FROM users ORDER BY first_name DESC"
-    # sql = "SELECT * FROM users ORDER BY last_name DESC"
-    # sql = "SELECT * FROM users ORDER BY age DESC"
-    
-    mycursor.execute(sql)    
-    myresult = mycursor.fetchall()
-    
-    for x in myresult:
-      print(x)
-
+def sort_funct(mycursor):
+    show_tabl_colum_data(mycursor)
+    options = ["Order by id [ascending]", "Order by first name [ascending]",
+               "Order by last name [ascending]", "Order by age[ascending]",
+               "Order by id [descending]", "Order by first name [descending]",
+               "Order by last name [descending]", "Order by age[descending]" ]    
+     
+    choice = enquiries.choose('Choose one of these options: ', options)
+    # ascending
+    if choice == options[0]:
+        sql = "SELECT * FROM users ORDER BY id"
+        show_tabl_colum_data(mycursor, sql)
+        any_key_clear()
+    elif choice == options[1]:
+        sql = "SELECT * FROM users ORDER BY first_name"
+        show_tabl_colum_data(mycursor, sql)
+        any_key_clear()
+    elif choice == options[2]:
+        sql = "SELECT * FROM users ORDER BY last_name"
+        show_tabl_colum_data(mycursor, sql)
+        any_key_clear()
+    elif choice == options[3]:
+        sql = "SELECT * FROM users ORDER BY age"
+        show_tabl_colum_data(mycursor, sql)
+        any_key_clear()
+    # descending
+    elif choice == options[4]:
+        sql = "SELECT * FROM users ORDER BY id DESC"
+        show_tabl_colum_data(mycursor, sql)
+        any_key_clear()
+    elif choice == options[5]:
+        sql = "SELECT * FROM users ORDER BY first_name DESC"
+        show_tabl_colum_data(mycursor, sql)
+        any_key_clear()
+    elif choice == options[6]:
+        sql = "SELECT * FROM users ORDER BY last_name DESC"
+        show_tabl_colum_data(mycursor, sql)
+        any_key_clear()
+    elif choice == options[7]:
+        sql = "SELECT * FROM users ORDER BY age DESC"
+        show_tabl_colum_data(mycursor, sql)
+        any_key_clear()
+        
 
 # deleting data support anty injection
-def delet_record(mycursor):    
+def delet_record(mycursor):
+    show_tabl_colum_data(mycursor)    
     sql = "DELETE FROM users WHERE age = %s"
     adr = ("66", )
     
@@ -165,25 +198,24 @@ def show_with_range(mycursor):
      
       
 # print menu      
-def menu():    
-    print(           
-"""
-1.  List all database
-2.  Create new tab.
-3.  Add data to new tab.
-4.  Show all items from tab.
-5.  Count all duplicates in table and show them.
-6.  Finding and deliting duplicates.
-7.  Sorting function.
-8.  Delete record.
-9.  Deleting tab.
-10.  Updating record in tab.
-11. Limit tab elements for show.
-12. Limit range of displayed tabs data.
-13. Close programm.
-""")
-    value = int(input("Input value:\n"))
-    return value
+def menu():
+    options = [  
+    "List all database.",
+    "Create new tab.",
+    "Add data to new tab.",
+    "Show all items from tab.",
+    "Count all duplicates in table and show them.",
+    "Finding and deliting duplicates.",
+    "Sorting function.",
+    "Delete record.",
+    "Deleting tab.",
+    "Updating record in tab.",
+    "Limit tab elements for show.",
+    "Limit range of displayed tabs data.",
+    "Close programm."]
+
+    # value = int(input("Input value:\n"))
+    return options
 
 
 # clear and continue 
@@ -199,66 +231,67 @@ def any_key_clear():
 
 #main function
 def main():    
-    value = -1
-    while value != 0:
+    while True:
+        mydb.reconnect()
         mycursor = mydb.cursor()
         new_tab = Create_Table()
-        value = menu()
-        if value == 1:
+        options = menu()
+        choice = enquiries.choose('Choose one of these options: ', options)
+        if choice == options[0]:
             new_tab.list_all_database(mycursor)
             any_key_clear()
-            continue
-        elif value == 2:
+            
+        elif choice == options[1]:
             new_tab.create_table(mycursor)
             any_key_clear()
-            continue
-        elif value == 3:
+            
+        elif choice == options[2]:
             new_tab.insert_data(mycursor, mydb)
             any_key_clear()
-            continue
-        elif value == 4:
+            
+        elif choice == options[3]:
             show_tabl_colum_data(mycursor)
             any_key_clear()
-            continue
-        elif value == 5:
+            
+        elif choice == options[4]:
             check_if_are_row_duplicates(mycursor) 
             any_key_clear()
-            continue
-        elif value == 6:            
+            
+        elif choice == options[5]:          
             del_row_duplicats(mycursor) 
             any_key_clear()
-            continue
-        elif value == 7:
+            
+        elif choice == options[6]:
             sort_funct(mycursor)
             any_key_clear()
-            continue
-        elif value == 8:
+            
+        elif choice == options[7]:
             delet_record(mycursor)
             any_key_clear()
-            continue
-        elif value == 9:
+            
+        elif choice == options[8]:
             del_table(mycursor)
             any_key_clear()
-            continue
-        elif value == 10:
+            
+        elif choice == options[9]:
             updating_record(mycursor)
             any_key_clear()
-            continue
-        elif value == 11:
+            
+        elif choice == options[10]:
             show_with_limits(mycursor)
             any_key_clear()
-            continue
-        elif value == 12:
+            
+        elif choice == options[11]:
             show_with_range(mycursor)
             any_key_clear()
             mycursor.close()
             mydb.close()
-            continue
-        elif value == 13:
+            
+        elif choice == options[12]:
             break
         else:
             print("Incorrect chooise, try again!")
-            continue
+            
        
 if __name__ == "__main__":
     main()
