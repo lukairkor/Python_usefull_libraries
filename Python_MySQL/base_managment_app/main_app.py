@@ -8,7 +8,7 @@ Created on Thu May  6 00:04:36 2021
 -adding function (print names of columns in table)
 -adding function (finding and deliting duplicates)
 -adding function (sorting function)
--adding function (deleting data)
+-adding function (deleting data)s
 -adding function (deleting tab)
 -adding function (updating record in tab)
 -adding function (limit tab elements for show)
@@ -25,61 +25,67 @@ import enquiries
 from creat_new_tab import Create_Table 
   
 
-# connecting to database
-mydb = mysql.connector.connect(
-  host="lukas-ThinkPad-T440",
-  user="root",
-  password="password",
-  database="sql-kurs"
-)
-
-
 # print names of columns in table       
 def show_tabl_colum_names(mycursor):
-    # first option scheme
-    sql = """SELECT COLUMN_NAME
-      FROM INFORMATION_SCHEMA.Columns
-      WHERE TABLE_SCHEMA = 'sql-kurs' AND TABLE_NAME = 'users';"""
+    try:
+        # first option scheme
+        sql = """SELECT COLUMN_NAME
+          FROM INFORMATION_SCHEMA.Columns
+          WHERE TABLE_SCHEMA = 'kurs_1' AND TABLE_NAME = 'users';"""
+        
+        mycursor.execute(sql, multi=True)
+        myresult = mycursor.fetchall()
+        # create one tuple with list of tuples (all with strings)
+        myresult = functools.reduce(lambda sub, ele: sub  + ele, myresult)     
     
-    mycursor.execute(sql)
-    myresult = mycursor.fetchall()
-    # create one tuple with list of tuples (all with strings)
-    myresult = functools.reduce(lambda sub, ele: sub  + ele, myresult)     
+        # mydb.commit()
+        return myresult
+    except:
+        print("Failed to print data")    
 
-    mydb.commit()
-    return myresult
-    
 
 # show all items from tab
 def show_tabl_colum_data(*args):
-    len_args = len(args)
-    if len_args > 1:
-        args[0].execute(args[1])      
-    else: 
-        args[0].execute("SELECT * FROM users")
+    try:
+        len_args = len(args)
+        if len_args > 1:
+            args[0].execute(args[1], multi=True)      
+        else: 
+            args[0].execute("SELECT * FROM users", multi=True)
+            
+        myresult = args[0].fetchall() # checking all row   
+        # fetch only one row
+    
+        tab = show_tabl_colum_names(args[0])
+        a, b, c, d = tab
+        print(tabulate(myresult, headers=[a, b, c, d]))
+    except:
+        print("Failed to print data")  
         
-    myresult = args[0].fetchall() # checking all row   
-    # fetch only one row
-
-    tab = show_tabl_colum_names(args[0])
-    a, b, c, d = tab
-    print(tabulate(myresult, headers=[a, b, c, d]))
-
         
 # count all duplicates in table and show them
 def check_if_are_row_duplicates(mycursor):
-    sql = """
-    SELECT COUNT(*), first_name, last_name, age 
-    FROM users
-    GROUP BY first_name, last_name, age
-    HAVING COUNT(*)>1;print('Duplicate Rows: ')               
-    for row in mycursor.fetchall():
-    """
-    mycursor.execute(sql)    
+    try:
+        sql = """
+        SELECT COUNT(*), first_name, last_name, age 
+        FROM users
+        GROUP BY first_name, last_name, age
+        HAVING COUNT(*) > 1;
+        """
+        data = mycursor.execute(sql)       
+        
+        # data = mycursor.fetchall()
+        # print(tabulate(data))
+        # print(tabulate(mycursor))
+        
     
-    print('Duplicate Rows: ')               
-    for row in mycursor.fetchall(): 
-        print(row)
+        print('Duplicate Rows: ')               
+        for row in data: 
+            print(row)
+        mycursor.close()
+    except:
+        print("Failed to print data")
+    # mycursor.close()
    
     
 # finding and deliting duplicates
@@ -93,7 +99,7 @@ def del_row_duplicats(mycursor):
     t1.last_name = t2.last_name AND
     t1.age = t2.age;
     """
-    mycursor.execute(sql)    
+    mycursor.execute(sql, multi=True)    
     mydb.commit()
     
     
@@ -150,7 +156,7 @@ def delet_record(mycursor):
     sql = "DELETE FROM users WHERE id= %s"
     adr = (f"{y}", )
     
-    mycursor.execute(sql, adr)   
+    mycursor.execute(sql, adr, multi=True)   
     mydb.commit()
     
     print(mycursor.rowcount, "record deleted")
@@ -160,24 +166,31 @@ def delet_record(mycursor):
 # deleting whole table
 def del_table(mycursor):
     sql = "DROP TABLE users"
-    mycursor.execute(sql)
+    mycursor.execute(sql, multi=True)
 
 
 # updating record in tab
 def updating_record(mycursor):   
-    sql = "UPDATE users SET age = %s WHERE id = %s"
-    val = ("22", "15")
+    show_tabl_colum_data(mycursor) 
     
-    mycursor.execute(sql, val) 
+    x = input("Insert column name:\n")
+    y = input("Insert old value to update:\n")
+    z = input("Insert new value to update:\n")
+    
+    sql = f"UPDATE users SET {x} = %s WHERE id = %s"
+    val = (f"{y}", f"{z}")
+    
+    mycursor.execute(sql, val, multi=True) 
     # required to make changes
     mydb.commit()
     
     print(mycursor.rowcount, "record(s) affected")    
+    show_tabl_colum_data(mycursor)  
  
     
 # limit tab elements for show
 def show_with_limits(mycursor):
-    mycursor.execute("SELECT * FROM users LIMIT 5") 
+    mycursor.execute("SELECT * FROM users LIMIT 5", multi=True) 
     myresult = mycursor.fetchall()
     
     for x in myresult:
@@ -186,7 +199,7 @@ def show_with_limits(mycursor):
 
 # limit range of displayed tabs data
 def show_with_range(mycursor):
-    mycursor.execute("SELECT * FROM users LIMIT 3 OFFSET 2")
+    mycursor.execute("SELECT * FROM users LIMIT 3 OFFSET 2", multi=True)
     myresult = mycursor.fetchall()
     
     for x in myresult:
@@ -227,72 +240,86 @@ def any_key_clear():
 
 
 #main function
-def main():    
-    while True:
-        mydb.reconnect()
-        mycursor = mydb.cursor()
-        new_tab = Create_Table()
-        options = menu()
-        choice = enquiries.choose('Choose one of these options: ', options)
-        
-        if choice == options[0]:
-            new_tab.list_all_database(mycursor)
-            any_key_clear()
+def main():  
+    # database
+    try:
+        # connecting to database
+        mydb = mysql.connector.connect(user='root', password='password',
+        port = 3306,
+        host = 'localhost',
+        database = 'base1'
+        # auth_plugin = 'mysql_native_password' 
+        )
+    except:
+        print("Cant connect to database")
+    else:
+        # infinity loop
+        while True:
+            mydb.reconnect()
+            mycursor = mydb.cursor(buffered=True)
+            new_tab = Create_Table()
+            options = menu()
+            choice = enquiries.choose('Choose one of these options: ', options)
             
-        elif choice == options[1]:
-            new_tab.create_table(mycursor)
-            any_key_clear()
+            if choice == options[0]:
+                new_tab.list_all_database(mycursor)
+                any_key_clear()
+                
+            elif choice == options[1]:
+                new_tab.create_table(mycursor)
+                any_key_clear()
+                
+            elif choice == options[2]:
+                new_tab.insert_data(mycursor, mydb)
+                any_key_clear()
+                
+            elif choice == options[3]:
+                show_tabl_colum_data(mycursor)
+                any_key_clear()
+                
+            elif choice == options[4]:
+                check_if_are_row_duplicates(mycursor) 
+                any_key_clear()
+                
+            elif choice == options[5]:          
+                del_row_duplicats(mycursor) 
+                any_key_clear()
+                
+            elif choice == options[6]:
+                sort_funct(mycursor)
+                any_key_clear()
+                
+            elif choice == options[7]:
+                delet_record(mycursor)
+                any_key_clear()
+                
+            elif choice == options[8]:
+                new_tab.inse_singl_recor(mycursor, mydb, show_tabl_colum_data)
+                any_key_clear()   
+                            
+            elif choice == options[9]:
+                del_table(mycursor)
+                any_key_clear()
+                
+            elif choice == options[10]:
+                updating_record(mycursor)
+                any_key_clear()
+                
+            elif choice == options[11]:
+                show_with_limits(mycursor)
+                any_key_clear()
+                
+            elif choice == options[12]:
+                show_with_range(mycursor)
+                any_key_clear()
+                mycursor.close()
+                mydb.close()
+                
+            elif choice == options[13]:
+                break
+            else:
+                print("Incorrect chooise, try again!")
             
-        elif choice == options[2]:
-            new_tab.insert_data(mycursor, mydb)
-            any_key_clear()
-            
-        elif choice == options[3]:
-            show_tabl_colum_data(mycursor)
-            any_key_clear()
-            
-        elif choice == options[4]:
-            check_if_are_row_duplicates(mycursor) 
-            any_key_clear()
-            
-        elif choice == options[5]:          
-            del_row_duplicats(mycursor) 
-            any_key_clear()
-            
-        elif choice == options[6]:
-            sort_funct(mycursor)
-            any_key_clear()
-            
-        elif choice == options[7]:
-            delet_record(mycursor)
-            any_key_clear()
-            
-        elif choice == options[8]:
-            new_tab.inse_singl_recor(mycursor, mydb, show_tabl_colum_data)
-            any_key_clear()   
-                        
-        elif choice == options[9]:
-            del_table(mycursor)
-            any_key_clear()
-            
-        elif choice == options[10]:
-            updating_record(mycursor)
-            any_key_clear()
-            
-        elif choice == options[11]:
-            show_with_limits(mycursor)
-            any_key_clear()
-            
-        elif choice == options[12]:
-            show_with_range(mycursor)
-            any_key_clear()
-            mycursor.close()
-            mydb.close()
-            
-        elif choice == options[13]:
-            break
-        else:
-            print("Incorrect chooise, try again!")
             
        
 if __name__ == "__main__":

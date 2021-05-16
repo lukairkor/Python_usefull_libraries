@@ -10,7 +10,7 @@ from tabulate import tabulate
 
 class Create_Table:
     def list_all_database(self, mycursor):
-        mycursor.execute("SHOW DATABASES")
+        mycursor.execute("SHOW DATABASES", multi=True)
         print(tabulate(mycursor))
   
     # create new empty table
@@ -24,7 +24,7 @@ class Create_Table:
             last_name VARCHAR(50) NOT NULL, 
             age INT NOT NULL
         );"""
-        mycursor.execute(sql)
+        mycursor.execute(sql, multi=True)
       
         
     # insert to empty table some data
@@ -46,7 +46,7 @@ class Create_Table:
            ('Jean','King',63),
            ('Susan','Nelson',45),
            ('Roland','Keitel',33); """
-        mycursor.execute(sql)
+        mycursor.execute(sql, multi=True)
         mydb.commit() 
         mydb.close()
       
@@ -61,7 +61,7 @@ class Create_Table:
         # inserting single record
         self.sql = "INSERT INTO users (id, first_name, last_name, age) VALUES (%s, %s, %s, %s)"
         self.val = (self.u, self.x, self.y, self.z)
-        mycursor.execute(self.sql, self.val)
+        mycursor.execute(self.sql, self.val, multi=True)
         
         print(mycursor.rowcount, "record added")
         show_tabl_colum_data(mycursor)  
