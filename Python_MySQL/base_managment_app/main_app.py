@@ -14,7 +14,7 @@ Created on Thu May  6 00:04:36 2021
 -adding function (limit tab elements for show)
 -adding function (limit range of displayed tabs data)
 -add menu and better tab show
--add possiblity to creat new tab and import it as classe object
+-add possiblity to creat new tab and import it as class object
 @author: lukas
 """
 import mysql.connector
@@ -31,7 +31,7 @@ def show_tabl_colum_names(mycursor):
         # first option scheme
         sql = """SELECT COLUMN_NAME
           FROM INFORMATION_SCHEMA.Columns
-          WHERE TABLE_SCHEMA = 'kurs_1' AND TABLE_NAME = 'users';"""
+          WHERE TABLE_SCHEMA = 'base1' AND TABLE_NAME = 'users';"""
         
         mycursor.execute(sql, multi=True)
         myresult = mycursor.fetchall()
@@ -46,21 +46,21 @@ def show_tabl_colum_names(mycursor):
 
 # show all items from tab
 def show_tabl_colum_data(*args):
-    try:
-        len_args = len(args)
-        if len_args > 1:
-            args[0].execute(args[1], multi=True)      
-        else: 
-            args[0].execute("SELECT * FROM users", multi=True)
-            
-        myresult = args[0].fetchall() # checking all row   
-        # fetch only one row
-    
-        tab = show_tabl_colum_names(args[0])
-        a, b, c, d = tab
-        print(tabulate(myresult, headers=[a, b, c, d]))
-    except:
-        print("Failed to print data")  
+    # try:
+    len_args = len(args)
+    if len_args > 1:
+        args[0].execute(args[1], multi=True)      
+    else: 
+        args[0].execute("SELECT * FROM users", multi=True)
+        
+    myresult = args[0].fetchall() # checking all row   
+    # fetch only one row
+
+    tab = show_tabl_colum_names(args[0])
+    a, b, c, d = tab
+    print(tabulate(myresult, headers=[a, b, c, d]))
+    # except:
+    #     print("Failed to print data")  
         
         
 # count all duplicates in table and show them
@@ -72,13 +72,9 @@ def check_if_are_row_duplicates(mycursor):
         GROUP BY first_name, last_name, age
         HAVING COUNT(*) > 1;
         """
-        data = mycursor.execute(sql)       
+        mycursor.execute(sql)       
         
-        # data = mycursor.fetchall()
-        # print(tabulate(data))
-        # print(tabulate(mycursor))
-        
-    
+        data = mycursor.fetchall()
         print('Duplicate Rows: ')               
         for row in data: 
             print(row)
@@ -89,10 +85,11 @@ def check_if_are_row_duplicates(mycursor):
    
     
 # finding and deliting duplicates
-def del_row_duplicats(mycursor):    
+def del_row_duplicats(mycursor): 
+    mydb = my_data_base()
     sql = """    
     delete t1 FROM users t1
-    INNER  JOIN users t2
+    INNER JOIN users t2
     WHERE
     t1.id < t2.id AND
     t1.first_name = t2.first_name AND
@@ -150,6 +147,7 @@ def sort_funct(mycursor):
 
 # deleting data support anty injection
 def delet_record(mycursor):
+    mydb = my_data_base()
     show_tabl_colum_data(mycursor)  
     
     y = input("Select row id for delete.")
@@ -170,8 +168,9 @@ def del_table(mycursor):
 
 
 # updating record in tab
-def updating_record(mycursor):   
-    show_tabl_colum_data(mycursor) 
+def updating_record(mycursor):
+    mydb = my_data_base()
+    show_tabl_colum_data(mycursor, mydb) 
     
     x = input("Insert column name:\n")
     y = input("Insert old value to update:\n")
@@ -214,7 +213,7 @@ def menu():
     "Add data to new table.",
     "Show all items in table.",
     "Show duplicates.",
-    "Show and delete duplicates.",
+    "Delete duplicates.",
     "Sorting function.",
     "Delete record.",
     "Insert record",
@@ -233,92 +232,94 @@ def any_key_clear():
     input("press any key to continue.")
     os.system('clear')   
 
-# # main function test
-# def main():    
-#     mycursor = mydb.cursor()    
-#     new_tab = Create_Table()
 
-
-#main function
-def main():  
-    # database
+#
+def my_data_base():
+    # database param
+    conf ={
+        'user' :'root',
+        'password' :'password',
+        'port' : 3306,
+        'host' : 'localhost',
+        'database' :'base1'}
     try:
         # connecting to database
-        mydb = mysql.connector.connect(user='root', password='password',
-        port = 3306,
-        host = 'localhost',
-        database = 'base1'
-        # auth_plugin = 'mysql_native_password' 
-        )
+        mydb = mysql.connector.connect(**conf)
+        return mydb
     except:
         print("Cant connect to database")
-    else:
-        # infinity loop
-        while True:
-            mydb.reconnect()
-            mycursor = mydb.cursor(buffered=True)
-            new_tab = Create_Table()
-            options = menu()
-            choice = enquiries.choose('Choose one of these options: ', options)
             
-            if choice == options[0]:
-                new_tab.list_all_database(mycursor)
-                any_key_clear()
-                
-            elif choice == options[1]:
-                new_tab.create_table(mycursor)
-                any_key_clear()
-                
-            elif choice == options[2]:
-                new_tab.insert_data(mycursor, mydb)
-                any_key_clear()
-                
-            elif choice == options[3]:
-                show_tabl_colum_data(mycursor)
-                any_key_clear()
-                
-            elif choice == options[4]:
-                check_if_are_row_duplicates(mycursor) 
-                any_key_clear()
-                
-            elif choice == options[5]:          
-                del_row_duplicats(mycursor) 
-                any_key_clear()
-                
-            elif choice == options[6]:
-                sort_funct(mycursor)
-                any_key_clear()
-                
-            elif choice == options[7]:
-                delet_record(mycursor)
-                any_key_clear()
-                
-            elif choice == options[8]:
-                new_tab.inse_singl_recor(mycursor, mydb, show_tabl_colum_data)
-                any_key_clear()   
-                            
-            elif choice == options[9]:
-                del_table(mycursor)
-                any_key_clear()
-                
-            elif choice == options[10]:
-                updating_record(mycursor)
-                any_key_clear()
-                
-            elif choice == options[11]:
-                show_with_limits(mycursor)
-                any_key_clear()
-                
-            elif choice == options[12]:
-                show_with_range(mycursor)
-                any_key_clear()
-                mycursor.close()
-                mydb.close()
-                
-            elif choice == options[13]:
-                break
-            else:
-                print("Incorrect chooise, try again!")
+        
+#main function
+def main():  
+    mydb = my_data_base()
+    # infinity loop
+    while True:
+        mydb.reconnect()
+        mycursor = mydb.cursor(buffered=True)
+        new_tab = Create_Table()
+        options = menu()
+        choice = enquiries.choose('Choose one of these options: ', options)
+        
+        if choice == options[0]:
+            new_tab.list_all_database(mycursor)
+            any_key_clear()
+            
+        elif choice == options[1]:
+            new_tab.create_table(mycursor)
+            any_key_clear()
+            
+        elif choice == options[2]:
+            new_tab.insert_data(mycursor, mydb)
+            any_key_clear()
+            
+        elif choice == options[3]:
+            show_tabl_colum_data(mycursor)
+            any_key_clear()
+            
+        elif choice == options[4]:
+            check_if_are_row_duplicates(mycursor) 
+            any_key_clear()
+            
+        elif choice == options[5]:          
+            del_row_duplicats(mycursor) 
+            any_key_clear()
+            
+        elif choice == options[6]:
+            sort_funct(mycursor)
+            any_key_clear()
+            
+        elif choice == options[7]:
+            delet_record(mycursor)
+            any_key_clear()
+            
+        elif choice == options[8]:
+            new_tab.inse_singl_recor(mycursor, mydb, show_tabl_colum_data)
+            any_key_clear()   
+                        
+        elif choice == options[9]:
+            del_table(mycursor)
+            any_key_clear()
+            
+        elif choice == options[10]:
+            updating_record(mycursor)
+            any_key_clear()
+            
+        elif choice == options[11]:
+            show_with_limits(mycursor)
+            any_key_clear()
+            
+        elif choice == options[12]:
+            show_with_range(mycursor)
+            any_key_clear()
+            mycursor.close()
+            mydb.close()
+            
+        elif choice == options[13]:
+            break
+        else:
+            print("Incorrect chooise, try again!")
+            mydb.close()
             
             
        

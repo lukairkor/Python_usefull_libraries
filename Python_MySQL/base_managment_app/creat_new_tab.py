@@ -48,7 +48,7 @@ class Create_Table:
            ('Roland','Keitel',33); """
         mycursor.execute(sql, multi=True)
         mydb.commit() 
-        mydb.close()
+
       
            
     # insert to table new data data

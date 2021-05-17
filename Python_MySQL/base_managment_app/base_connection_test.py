@@ -5,12 +5,12 @@ Created on Sun May 16 23:37:01 2021
 
 @author: lukas
 """
-import pymysql.cursors
+import mysql.connector
 
 # connecting to database
-mydb = pymysql.connect(user='root', password='password',
+mydb = mysql.connector.connect(user='root', password='16741674',
 port = 3306,
 host = 'localhost',
-database = 'base1',
-cursorclass=pymysql.cursors.DictCursor
+database = 'base1'
+# auth_plugin = 'mysql_native_password' 
 )
