@@ -216,7 +216,7 @@ def menu():
     "Delete duplicates.",
     "Sorting function.",
     "Delete record.",
-    "Insert record",
+    "Insert record.",
     "Deleting table.",
     "Updating record in table.",
     "Limit table elements for show.",
@@ -238,7 +238,7 @@ def my_data_base():
     # database param
     conf ={
         'user' :'root',
-        'password' :'password',
+        'password' :'16741674',
         'port' : 3306,
         'host' : 'localhost',
         'database' :'base1'}
@@ -321,8 +321,7 @@ def main():
             print("Incorrect chooise, try again!")
             mydb.close()
             
-            
-       
+                
 if __name__ == "__main__":
     main()
 
