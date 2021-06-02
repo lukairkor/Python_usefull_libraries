@@ -33,7 +33,7 @@ class Create_Table:
             print("Failed to create table!")  
       
         
-    # insert to empty table some data
+    # insert into empty table some random data
     def insert_data(self, mycursor, mydb):
         try:
             sql = """

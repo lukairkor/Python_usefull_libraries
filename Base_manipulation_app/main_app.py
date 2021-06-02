@@ -189,9 +189,8 @@ def updating_record(mycursor, mydb):
     if show_tabl_colum_data(mycursor):
         options = ["Uptdate: first_name.", "Uptdate: last_name.",
            "Uptdate: age."]    
-             
+        # select column to update
         choice = enquiries.choose('Choose one of these options: ', options)
-        # ascending
         if choice == options[0]:
             id_ = input("Insert column id:\n")
             name = input("Insert new value to update:\n")
@@ -264,7 +263,7 @@ def menu():
     options = [  
     "List all database.",
     "Create new table.",
-    "Add data to new table.",
+    "Add some example data into table.",
     "Show all items in table.",
     "Show duplicates.",
     "Delete duplicates.",
