@@ -160,7 +160,6 @@ def sort_funct(mycursor):
 def delet_record(mycursor, mydb):
     try:
         if show_tabl_colum_data(mycursor):
-            show_tabl_colum_data(mycursor)
 
             y = input("Select row id for delete.")
             sql = "DELETE FROM users WHERE id= %s"
@@ -237,11 +236,16 @@ def updating_record(mycursor, mydb):
 # limit tab elements for show
 def show_with_limits(mycursor):
     try:
-        mycursor.execute("SELECT * FROM users LIMIT 5", multi=True) 
+        value = input("How many element show?")
+        sql_query = f"SELECT * FROM users LIMIT {value}"
+        sql_query = sql_query.format(value)
+                
+        mycursor.execute(sql_query, multi=True)
         myresult = mycursor.fetchall()
         
-        for x in myresult:
-          print(x)
+        tab = show_tabl_colum_names(mycursor)
+        a, b, c, d = tab
+        print(tabulate(myresult, headers=[c, b, d, a]))
     except:
         print("Failed to limit data!")  
 
@@ -249,11 +253,18 @@ def show_with_limits(mycursor):
 # limit range of displayed tabs data
 def show_with_range(mycursor):
     try:
-        mycursor.execute("SELECT * FROM users LIMIT 3 OFFSET 2", multi=True)
+        print("Type tange value:")
+        value1 = input("Imput start value:")
+        value2 = input("Imput end value:")
+        sql_query = f"SELECT * FROM users LIMIT {value1} OFFSET {value2}"
+        sql_query = sql_query.format(value1, value2)
+                
+        mycursor.execute(sql_query, multi=True)
         myresult = mycursor.fetchall()
-        
-        for x in myresult:
-          print(x)
+                
+        tab = show_tabl_colum_names(mycursor)
+        a, b, c, d = tab
+        print(tabulate(myresult, headers=[c, b, d, a]))
     except:
         print("Failed to range data!")  
      
@@ -272,8 +283,8 @@ def menu():
     "Insert record.",
     "Deleting table.",
     "Updating record.",
-    "Limit table elements for show.",
-    "Limit range of displayed tabs data.",
+    "Limint amount of displayed rows. ",
+    "Limit range of displayed rows. ",
     "Close programm."]
 
     # value = int(input("Input value:\n"))
