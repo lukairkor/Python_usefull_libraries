@@ -77,10 +77,11 @@ def check_if_are_row_duplicates(mycursor):
         """
         mycursor.execute(sql)       
         
-        data = mycursor.fetchall()
+        myresult = mycursor.fetchall()
         print('Duplicate Rows: ')               
-        for row in data: 
-            print(row)
+        tab = show_tabl_colum_names(mycursor)
+        a, b, c, d = tab
+        print(tabulate(myresult, headers=[c, b, d, a]))
         mycursor.close()
     except:
         print("Failed to print data!")
@@ -109,9 +110,7 @@ def del_row_duplicats(mycursor, mydb):
 # sorting ascending or descending    
 def sort_funct(mycursor):
     try: 
-        # if show is not false continue ele exept
         if show_tabl_colum_data(mycursor):
-            show_tabl_colum_data(mycursor)
             options = ["Order by id [ascending]", "Order by first name [ascending]",
                        "Order by last name [ascending]", "Order by age[ascending]",
                        "Order by id [descending]", "Order by first name [descending]",
